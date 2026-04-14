@@ -219,13 +219,45 @@ def parse_json_response(raw):
         raise
 
 
+PROCESSED_DIR = "/home/cymolt/poshmark_listings/processed"
+
+
 def scan_inbound():
-    """Return all image files in the inbound folder, sorted oldest-first."""
+    """Return all image files in the inbound folder, sorted oldest-first.
+    Skips any file whose name already exists anywhere under processed/.
+    """
     files = []
     for ext in ("*.jpg", "*.jpeg", "*.png", "*.JPG", "*.JPEG", "*.PNG"):
         files.extend(glob.glob(os.path.join(INBOUND_DIR, ext)))
     files = sorted(set(files), key=os.path.getmtime)
-    print(f"Found {len(files)} image(s) in inbound folder.")
+    # Build set of basenames already in processed/ so we skip re-processing
+    already_processed = set()
+    if os.path.isdir(PROCESSED_DIR):
+        for dirpath, _, filenames in os.walk(PROCESSED_DIR):
+            already_processed.update(filenames)
+    before = len(files)
+    files = [f for f in files if os.path.basename(f) not in already_processed]
+    skipped = before - len(files)
+    if skipped:
+        print(f"Skipped {skipped} photo(s) already in processed/.")
+    # Deduplicate by MD5 hash — keep oldest copy of each unique image
+    import hashlib
+    seen_hashes = set()
+    deduped = []
+    for f in files:
+        try:
+            md5 = hashlib.md5(open(f, "rb").read()).hexdigest()
+        except OSError:
+            deduped.append(f)
+            continue
+        if md5 not in seen_hashes:
+            seen_hashes.add(md5)
+            deduped.append(f)
+    dupes = len(files) - len(deduped)
+    if dupes:
+        print(f"Skipped {dupes} duplicate photo(s).")
+    files = deduped
+    print(f"Found {len(files)} new image(s) in inbound folder.")
     return files
 
 
@@ -1016,21 +1048,21 @@ async def run_create():
         if r["listing_id"]:
             print(f"     listing_id: {r['listing_id']}")
 
-    # Move photos to processed/{listing_id}/ for successful drafts
-    PROCESSED_DIR = "/home/cymolt/poshmark_listings/processed"
-    os.makedirs(PROCESSED_DIR, exist_ok=True)
+    # Move photos to processed/{date}/ for successful drafts
+    import shutil
+    from datetime import date
+    date_slug = date.today().isoformat()  # e.g. 2026-04-13
+    date_dir = os.path.join(PROCESSED_DIR, date_slug)
+    os.makedirs(date_dir, exist_ok=True)
     for r in results:
         if not r["success"]:
             continue
         listing_id = r["listing_id"] or f"unknown_{r['title'][:20].replace(' ','_')}"
-        dest_dir = os.path.join(PROCESSED_DIR, listing_id)
-        os.makedirs(dest_dir, exist_ok=True)
-        # Move photos
-        import shutil
+        # Move photos into processed/{date}/
         for photo_path in r["photos"]:
             if os.path.exists(photo_path):
-                shutil.move(photo_path, os.path.join(dest_dir, os.path.basename(photo_path)))
-        # Save listing metadata
+                shutil.move(photo_path, os.path.join(date_dir, os.path.basename(photo_path)))
+        # Save per-listing metadata alongside the photos
         meta = {
             "listing_id": listing_id,
             "title": r["listing"]["title"],
@@ -1043,9 +1075,10 @@ async def run_create():
             "drafted_at": __import__('datetime').datetime.now().isoformat(),
             "status": "draft",
         }
-        with open(os.path.join(dest_dir, "listing.json"), "w") as f:
+        meta_name = f"listing_{listing_id[:40]}.json"
+        with open(os.path.join(date_dir, meta_name), "w") as f:
             json.dump(meta, f, indent=2)
-        print(f"  📁 Photos moved to processed/{listing_id}/")
+        print(f"  📁 Photos moved to processed/{date_slug}/")
 
     # Clear classification cache for moved photos
     cache = load_classification_cache()
