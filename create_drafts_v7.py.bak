@@ -490,16 +490,8 @@ def generate_listing(photo_paths, group_description):
         raise RuntimeError(f"generate_listing: {TEXT_MODEL} returned empty response after 3 attempts")
     data = parse_json_response(raw)
 
-    # Normalize None values from llama before any processing
-    data["brand"]      = data.get("brand")      or "Unknown"
-    data["size"]       = data.get("size")        or "One Size"
-    data["color"]      = data.get("color")       or "Unknown"
-    data["condition"]  = data.get("condition")   or "Gently Used"
-    data["title"]      = data.get("title")       or "Kids Clothing Item"
-    data["list_price"] = data.get("list_price")  or "10"
-    data["category"]   = data.get("category")    or "Other"
     # Apply brand floor safety net
-    brand_key = data["brand"].lower()
+    brand_key = data.get("brand", "").lower()
     floor = next((v for k, v in BRAND_FLOORS.items() if k in brand_key), None)
     try:
         price = int(data.get("list_price", "0"))
