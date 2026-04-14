@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -fsSL https://lmstudio.ai/install.sh)",
+      "Bash(bash)",
+      "Bash(export PATH=\"/home/cymolt/.lmstudio/bin:$PATH\")",
+      "Bash(lms login:*)",
+      "Bash(lms get:*)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(list\\(d.keys\\(\\)\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(list\\(d['profiles'].keys\\(\\)\\)\\)\")",
+      "Bash(python3 -c ':*)",
+      "Bash(ssh cymolt@100.92.176.108 \"cat ~/poshmark_listings/workspace/agents/main/agent.json\")",
+      "Bash(ssh cymolt@192.168.86.58 \"cat ~/poshmark_listings/workspace/agents/main/agent.json\")"
+    ]
+  }
+}

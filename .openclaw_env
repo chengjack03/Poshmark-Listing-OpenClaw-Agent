@@ -1,0 +1,4 @@
+OPENCLAW_STATE_DIR=/home/cymolt/poshmark_listings/.openclaw_state
+OPENCLAW_GATEWAY_PORT=18789
+OPENCLAW_GATEWAY_BIND=custom
+OPENCLAW_GATEWAY_HOST=0.0.0.0

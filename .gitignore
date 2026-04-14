@@ -1,0 +1,12 @@
+.openclaw_state/
+auth.json
+*.log
+__pycache__/
+*.pyc
+.env
+cache/
+pending_listings.json
+*.tar.gz
+*secret*
+*credentials*
+workspace/
