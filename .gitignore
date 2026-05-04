@@ -10,3 +10,6 @@ pending_listings.json
 *secret*
 *credentials*
 workspace/
+run_preview_cron.sh
+run_preview_cron.sh.save
+run_preview_cron.sh.save.1
