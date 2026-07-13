@@ -13,7 +13,7 @@ import asyncio, json, os, sys
 
 COOKIES_FILE   = "/home/cymolt/poshmark_listings/auth.json"
 PROCESSED_DIR  = "/home/cymolt/poshmark_listings/processed"
-POSHMARK_USER  = "POSHMARK_USER_REDACTED"
+POSHMARK_USER  = os.getenv("POSHMARK_USER", "")
 SAMESITE_MAP   = {"no_restriction":"None","unspecified":"None","lax":"Lax","strict":"Strict","none":"None"}
 
 

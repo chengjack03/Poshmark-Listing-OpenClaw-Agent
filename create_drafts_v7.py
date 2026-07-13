@@ -933,7 +933,7 @@ def format_whatsapp_summary(listings_to_create):
 
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = "5795089689"
-POSHMARK_CLOSET = "poshmark.com/closet/POSHMARK_USER_REDACTED"
+POSHMARK_CLOSET = f"poshmark.com/closet/{os.environ.get('POSHMARK_USER', '')}"
 
 
 def send_telegram_notification(results):

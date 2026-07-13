@@ -1,7 +1,8 @@
 """Check drafts count and list on Poshmark."""
-import asyncio, json
+import asyncio, json, os
 
 COOKIES_FILE = "/home/cymolt/poshmark_listings/auth.json"
+POSHMARK_USER = os.getenv("POSHMARK_USER", "")
 SAMESITE_MAP = {"no_restriction":"None","unspecified":"None","lax":"Lax","strict":"Strict","none":"None"}
 
 def nc(c):
@@ -24,7 +25,7 @@ async def main():
         page = await ctx.new_page()
 
         # Check drafts via the drafts page
-        await page.goto("https://poshmark.com/closet/POSHMARK_USER_REDACTED?availability=draft", wait_until="networkidle", timeout=30000)
+        await page.goto(f"https://poshmark.com/closet/{POSHMARK_USER}?availability=draft", wait_until="networkidle", timeout=30000)
         await page.wait_for_timeout(3000)
 
         title = await page.title()
